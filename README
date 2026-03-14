@@ -4,21 +4,23 @@ VMP is a minimalist, keyboard-driven TUI music player designed for high-fidelity
 
 ## Controls
 
-- `j/k`: Browse Folders
-- `Enter`: Select & Play
+- [j/k]: Browse Folders
+- [Enter]: Select & Play
 
-- `p`: Play/Pause
-- `b/n`: Prev/Next Track
-- `s`: Toggle Shuffle
+- [p]: Play/Pause
+- [b/n]: Prev/Next Track
+- [s]: Toggle Shuffle
 
-- `+/-`: Volume Control
-- `q`: Quit
+- [+/-]: Volume Control
+- [q]: Quit
 
 Keybinds are also shown inside the app if you forgot some :P
 
 ## Installation
 
-Ensure you have [Go](https://go.dev/doc/install) installed and your `$GOPATH/bin` added to your `$PATH`.
-
-```bash
-go install [github.com/](https://github.com/)vmp102/void-music-player@latest
+For now you can do this:
+Create a folder for vmp and put *.go files inside it.
+Next, inside that folder, run "go install ." (without the quotation marks"
+Unsure on how it works on Windows, but on Linux add "export PATH=$PATH:$(go env GOPATH)/bin" (without quotation marks) to your .bashrc or .zshrc.
+Next, just run "vmp" inside your terminal and it should load.
+VMP also check just the ~/Music folder, so I doubt it will work on Windows and it's possible it will work on Mac. If you use any other directory... it won't work.
