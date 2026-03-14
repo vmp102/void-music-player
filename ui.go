@@ -25,10 +25,10 @@ var (
 			Height(20)
 )
 
-func renderSidebar(folders []Folder, cursor int) string {
+func renderSidebar(folders []Folder, cursor int, searching bool, query string) string {
 	var s strings.Builder
 	s.WriteString(lipgloss.NewStyle().Bold(true).Foreground(special).Render("FOLDERS") + "\n\n")
-	
+
 	for i, f := range folders {
 		prefix := "  "
 		style := lipgloss.NewStyle().Foreground(gray)
@@ -38,6 +38,15 @@ func renderSidebar(folders []Folder, cursor int) string {
 		}
 		s.WriteString(style.Render(prefix+f.Name) + "\n")
 	}
+
+	if searching {
+		bar := lipgloss.NewStyle().
+			Foreground(special).
+			Border(lipgloss.NormalBorder(), true, false, false, false).
+			Render("/ " + query + "█")
+		s.WriteString("\n" + bar)
+	}
+
 	return paneStyle.Render(s.String())
 }
 
@@ -83,8 +92,8 @@ func renderPlayer(song string, playing bool, vol int, shuf bool) string {
 	help := lipgloss.JoinVertical(lipgloss.Left,
 		"\n",
 		keyStyle.Render("[j/k]   Navigation    [/]   Search"),
-		keyStyle.Render("[Enter] Play Folder   [e/r] Seek 5s"),
-		keyStyle.Render("[p]     Pause"),
+		keyStyle.Render("[Enter] Play Folder   [.]   Clear Search"),
+		keyStyle.Render("[p]     Pause         [e/r] Seek 5s"),
 		keyStyle.Render("[b/n]   Prev/Next"),
 		keyStyle.Render("[+/-]   Vol Up/Down"),
 		keyStyle.Render("[s]     Shuffle"),
