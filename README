@@ -1,0 +1,24 @@
+# Void Music Player
+
+VMP is a minimalist, keyboard-driven TUI music player designed for high-fidelity audio and distraction-free listening. Built with Go, it provides a "rice-friendly" alternative to complex setups like MPD.
+
+## Controls
+
+- `j/k`: Browse Folders
+- `Enter`: Select & Play
+
+- `p`: Play/Pause
+- `b/n`: Prev/Next Track
+- `s`: Toggle Shuffle
+
+- `+/-`: Volume Control
+- `q`: Quit
+
+Keybinds are also shown inside the app if you forgot some :P
+
+## Installation
+
+Ensure you have [Go](https://go.dev/doc/install) installed and your `$GOPATH/bin` added to your `$PATH`.
+
+```bash
+go install [github.com/](https://github.com/)vmp102/void-music-player@latest
