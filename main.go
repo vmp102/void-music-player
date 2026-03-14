@@ -145,6 +145,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.playing = !ctrl.Paused
 				speaker.Unlock()
 			}
+		case "e":
+			seekAudio(-5)
+		case "r":
+			seekAudio(5)
 		}
 	}
 	return m, nil

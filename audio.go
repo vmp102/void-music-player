@@ -60,6 +60,21 @@ func playFile(path string, onDone func()) error {
 	return nil
 }
 
+func seekAudio(seconds int) {
+	if streamer == nil { return }
+	
+	speaker.Lock()
+	newPos := streamer.Position() + format.SampleRate.N(time.Duration(seconds)*time.Second)
+	if newPos < 0 {
+		newPos = 0
+	}
+	if newPos >= streamer.Len() {
+		newPos = streamer.Len() - 1
+	}
+	streamer.Seek(newPos)
+	speaker.Unlock()
+}
+
 func getTimeInfo() (time.Duration, time.Duration) {
 	if streamer == nil { return 0, 0 }
 	cp := format.SampleRate.D(streamer.Position())

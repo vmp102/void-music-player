@@ -82,13 +82,13 @@ func renderPlayer(song string, playing bool, vol int, shuf bool) string {
 	keyStyle := lipgloss.NewStyle().Foreground(gray)
 	help := lipgloss.JoinVertical(lipgloss.Left,
 		"\n",
-		keyStyle.Render("[j/k] Navigation"),
-		keyStyle.Render("[Enter] Play"),
-		keyStyle.Render("[p] Pause"),
-		keyStyle.Render("[b/n] Prev/Next"),
-		keyStyle.Render("[+/-] Vol. Up/Down"),
-		keyStyle.Render("[s] Shuffle"),
-		keyStyle.Render("[q] Quit"),
+		keyStyle.Render("[j/k]   Navigation    [/]   Search"),
+		keyStyle.Render("[Enter] Play Folder   [e/r] Seek 5s"),
+		keyStyle.Render("[p]     Pause"),
+		keyStyle.Render("[b/n]   Prev/Next"),
+		keyStyle.Render("[+/-]   Vol Up/Down"),
+		keyStyle.Render("[s]     Shuffle"),
+		keyStyle.Render("[q]     Quit"),
 	)
 
 	return midStyle.Render(lipgloss.JoinVertical(lipgloss.Left,
