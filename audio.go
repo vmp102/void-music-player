@@ -38,7 +38,7 @@ func setVolume(steps int) {
 	speaker.Unlock()
 }
 
-func playFile(path string) error {
+func playFile(path string, onDone func()) error {
 	f, err := os.Open(path)
 	if err != nil { return err }
 
@@ -56,7 +56,7 @@ func playFile(path string) error {
 	ctrl = &beep.Ctrl{Streamer: volumeControl, Paused: false}
 	
 	speaker.Clear()
-	speaker.Play(ctrl)
+	speaker.Play(beep.Seq(ctrl, beep.Callback(onDone)))
 	return nil
 }
 
