@@ -258,7 +258,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	return lipgloss.JoinHorizontal(lipgloss.Top,
 		renderSidebar(m.folders, m.cursor, m.searching, m.searchQuery), 
-		renderPlayer(m.currentSong, m.playing, m.volume, m.shuffle),
+		renderPlayer(m.currentSong, m.currentPath, m.playing, m.volume, m.shuffle),
 		renderQueue(m.displayQueue, m.currentPath),
 	)
 }
