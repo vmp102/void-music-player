@@ -125,6 +125,20 @@ func (m *model) playCurrent() {
 	}
 }
 
+func getTrackName(path string) string {
+	f, err := os.Open(path)
+	if err != nil {
+		return filepath.Base(path)
+	}
+	defer f.Close()
+
+	metadata, err := tag.ReadFrom(f)
+	if err != nil || metadata.Title() == "" {
+		return filepath.Base(path)
+	}
+	return metadata.Title()
+}
+
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case nextSongMsg:

@@ -15,16 +15,16 @@ var (
 	black   = lipgloss.Color("#000000")
 
 	paneStyle = lipgloss.NewStyle().
-		Border(lipgloss.NormalBorder(), false, true, false, false).
-		BorderForeground(lipgloss.Color("#333333")).
-		Padding(1, 2).
-		Width(35).
-		Height(20)
+			Border(lipgloss.NormalBorder(), false, true, false, false).
+			BorderForeground(lipgloss.Color("#333333")).
+			Padding(1, 2).
+			Width(35).
+			Height(20)
 
 	midStyle = lipgloss.NewStyle().
-		Padding(1, 2).
-		Width(50).
-		Height(20)
+			Padding(1, 2).
+			Width(50).
+			Height(20)
 )
 
 func renderSidebar(folders []Folder, cursor int, searching bool, query string) string {
@@ -60,7 +60,8 @@ func renderQueue(songs []string, queueIdx int) string {
 	count := 0
 	if queueIdx >= 0 && queueIdx < len(songs)-1 {
 		for i := queueIdx + 1; i < len(songs); i++ {
-			s.WriteString(lipgloss.NewStyle().Foreground(gray).Render("- " + filepath.Base(songs[i])) + "\n")
+			trackName := getTrackName(songs[i])
+			s.WriteString(lipgloss.NewStyle().Foreground(gray).Render("- "+trackName) + "\n")
 			count++
 		}
 	}
