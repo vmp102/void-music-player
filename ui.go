@@ -15,19 +15,15 @@ var (
 	black   = lipgloss.Color("#000000")
 
 	paneStyle = lipgloss.NewStyle().
-			Border(lipgloss.NormalBorder(), false, true, false, false).
-			BorderForeground(lipgloss.Color("#333333")).
-			Padding(1, 2).
-			Width(35).
-			Height(20)
+		Border(lipgloss.NormalBorder(), false, true, false, false).
+		BorderForeground(lipgloss.Color("#333333")).
+		Padding(1, 2)
 
 	midStyle = lipgloss.NewStyle().
-			Padding(1, 2).
-			Width(50).
-			Height(20)
+		Padding(1, 2)
 )
 
-func renderSidebar(folders []Folder, cursor int, searching bool, query string) string {
+func renderSidebar(folders []Folder, cursor int, searching bool, query string, h int) string {
 	var s strings.Builder
 	s.WriteString(lipgloss.NewStyle().Bold(true).Foreground(special).Render("FOLDERS") + "\n\n")
 
@@ -50,10 +46,10 @@ func renderSidebar(folders []Folder, cursor int, searching bool, query string) s
 		s.WriteString("\n" + bar)
 	}
 
-	return paneStyle.Render(s.String())
+	return paneStyle.Copy().Width(30).Height(h).Render(s.String())
 }
 
-func renderQueue(songs []string, queueIdx int) string {
+func renderQueue(songs []string, queueIdx int, h int) string {
 	var s strings.Builder
 	s.WriteString(lipgloss.NewStyle().Bold(true).Foreground(special).Render("QUEUE") + "\n\n")
 
@@ -66,7 +62,7 @@ func renderQueue(songs []string, queueIdx int) string {
 				s.WriteString(lipgloss.NewStyle().Foreground(gray).Render(". . .") + "\n")
 				break
 			}
-			
+
 			trackName := getTrackName(songs[i])
 			s.WriteString(lipgloss.NewStyle().Foreground(gray).Render("- "+trackName) + "\n")
 			count++
@@ -79,6 +75,9 @@ func renderQueue(songs []string, queueIdx int) string {
 
 	return paneStyle.Copy().
 		Border(lipgloss.NormalBorder(), false, false, false, true).
+		PaddingRight(4).
+		Width(30).
+		Height(h).
 		Render(s.String())
 }
 
@@ -89,7 +88,7 @@ func formatDuration(d time.Duration) string {
 	return fmt.Sprintf("%02d:%02d", minutes, seconds)
 }
 
-func renderPlayer(title string, artist string, currentPath string, playing bool, vol int, shuf bool) string {
+func renderPlayer(title string, artist string, currentPath string, playing bool, vol int, shuf bool, h int, w int) string {
 	state := "⏸ PAUSED"
 	if playing {
 		state = "▶ PLAYING"
@@ -107,11 +106,20 @@ func renderPlayer(title string, artist string, currentPath string, playing bool,
 
 	curr, total := getTimeInfo()
 
+	mainWidth := w - 60
+	if mainWidth < 40 {
+		mainWidth = 40
+	}
+
+	barWidth := mainWidth - 16 
+	if barWidth < 10 {
+		barWidth = 10
+	}
+
 	percent := 0.0
 	if total > 0 {
 		percent = float64(curr) / float64(total)
 	}
-	barWidth := 30
 	filled := int(float64(barWidth) * percent)
 
 	bar := lipgloss.NewStyle().Foreground(special).Render(strings.Repeat("━", filled)) +
@@ -134,7 +142,7 @@ func renderPlayer(title string, artist string, currentPath string, playing bool,
 		keyStyle.Render("[q]     Quit"),
 	)
 
-	return midStyle.Render(lipgloss.JoinVertical(lipgloss.Left,
+	return midStyle.Copy().Width(mainWidth).Height(h).Render(lipgloss.JoinVertical(lipgloss.Left,
 		lipgloss.JoinHorizontal(lipgloss.Center, statusBox, folderBox),
 		"\n",
 		lipgloss.NewStyle().Bold(true).Foreground(special).Render(title),

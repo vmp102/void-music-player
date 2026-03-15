@@ -28,14 +28,16 @@ type model struct {
 	shuffle       bool
 	currentSong   string
 	currentPath   string
+	currentTitle  string
+	currentArtist string
 	displayQueue  []string
 	queueIdx      int
 	searching     bool
 	searchQuery   string
 	allFolders    []Folder
 
-	currentTitle  string
-	currentArtist string
+	termWidth     int
+	termHeight    int
 }
 
 var p *tea.Program
@@ -143,6 +145,10 @@ func getTrackName(path string) string {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.termHeight = msg.Height
+		m.termWidth = msg.Width
+		return m, nil
 	case nextSongMsg:
 		if len(m.displayQueue) > 0 {
 			if m.queueIdx < len(m.displayQueue)-1 {
@@ -322,9 +328,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	return lipgloss.JoinHorizontal(lipgloss.Top,
-		renderSidebar(m.folders, m.cursor, m.searching, m.searchQuery),
-		renderPlayer(m.currentTitle, m.currentArtist, m.currentPath, m.playing, m.volume, m.shuffle),
-		renderQueue(m.displayQueue, m.queueIdx),
+		renderSidebar(m.folders, m.cursor, m.searching, m.searchQuery, m.termHeight),
+		renderPlayer(m.currentTitle, m.currentArtist, m.currentPath, m.playing, m.volume, m.shuffle, m.termHeight, m.termWidth),
+		renderQueue(m.displayQueue, m.queueIdx, m.termHeight),
 	)
 }
 
