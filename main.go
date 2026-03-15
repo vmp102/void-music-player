@@ -56,8 +56,8 @@ func initialModel() model {
 
 func (m model) Init() tea.Cmd { return tick() }
 
-func tick() tea.Cmd { 
-	return tea.Every(time.Second, func(t time.Time) tea.Msg { return tickMsg(t) }) 
+func tick() tea.Cmd {
+	return tea.Every(time.Millisecond*250, func(t time.Time) tea.Msg { return tickMsg(t) })
 }
 
 func (m *model) playCurrent() {

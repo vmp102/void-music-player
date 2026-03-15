@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"time"
+
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -43,6 +45,7 @@ func renderSidebar(folders []Folder, cursor int, searching bool, query string) s
 		bar := lipgloss.NewStyle().
 			Foreground(special).
 			Border(lipgloss.NormalBorder(), true, false, false, false).
+			BorderForeground(lipgloss.Color("#333333")).
 			Render("/ " + query + "█")
 		s.WriteString("\n" + bar)
 	}
@@ -53,7 +56,7 @@ func renderSidebar(folders []Folder, cursor int, searching bool, query string) s
 func renderQueue(songs []string, currentPath string) string {
 	var s strings.Builder
 	s.WriteString(lipgloss.NewStyle().Bold(true).Foreground(special).Render("QUEUE") + "\n\n")
-	
+
 	count, found := 0, false
 	for _, song := range songs {
 		if song == currentPath {
@@ -65,7 +68,7 @@ func renderQueue(songs []string, currentPath string) string {
 			count++
 		}
 	}
-	
+
 	if count == 0 && !found {
 		s.WriteString(lipgloss.NewStyle().Foreground(gray).Italic(true).Render("Empty"))
 	}
@@ -75,18 +78,34 @@ func renderQueue(songs []string, currentPath string) string {
 		Render(s.String())
 }
 
+func formatDuration(d time.Duration) string {
+	totalSeconds := int(d.Seconds())
+	minutes := totalSeconds / 60
+	seconds := totalSeconds % 60
+	return fmt.Sprintf("%02d:%02d", minutes, seconds)
+}
+
 func renderPlayer(song string, playing bool, vol int, shuf bool) string {
-	state := "⏸ PAUSED"; if playing { state = "▶ PLAYING" }
-	shufLabel := "OFF"; if shuf { shufLabel = "ON" }
+	state := "⏸ PAUSED"
+	if playing {
+		state = "▶ PLAYING"
+	}
+	shufLabel := "OFF"
+	if shuf {
+		shufLabel = "ON"
+	}
+
 	curr, total := getTimeInfo()
-	
+
 	percent := 0.0
-	if total > 0 { percent = float64(curr) / float64(total) }
+	if total > 0 {
+		percent = float64(curr) / float64(total)
+	}
 	barWidth := 30
 	filled := int(float64(barWidth) * percent)
-	
-	bar := lipgloss.NewStyle().Foreground(special).Render(strings.Repeat("━", filled)) + 
-	       lipgloss.NewStyle().Foreground(lipgloss.Color("#333333")).Render(strings.Repeat("━", barWidth-filled))
+
+	bar := lipgloss.NewStyle().Foreground(special).Render(strings.Repeat("━", filled)) +
+		lipgloss.NewStyle().Foreground(lipgloss.Color("#333333")).Render(strings.Repeat("━", barWidth-filled))
 
 	keyStyle := lipgloss.NewStyle().Foreground(gray)
 	help := lipgloss.JoinVertical(lipgloss.Left,
@@ -105,7 +124,7 @@ func renderPlayer(song string, playing bool, vol int, shuf bool) string {
 		"\n",
 		lipgloss.NewStyle().Bold(true).Foreground(special).Render(song),
 		"\n",
-		fmt.Sprintf("%s %s %s", curr.String(), bar, total.String()),
+		fmt.Sprintf("%s %s %s", formatDuration(curr), bar, formatDuration(total)),
 		"\n",
 		fmt.Sprintf("Vol: %d%% | Shuffle: %s", vol, shufLabel),
 		help,
