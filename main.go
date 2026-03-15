@@ -19,6 +19,8 @@ type nextSongMsg struct{}
 type tickMsg time.Time
 
 type model struct {
+	terminalProgram *tea.Program
+
 	folders       []Folder
 	cursor        int
 	playing       bool
@@ -326,7 +328,14 @@ func (m model) View() string {
 
 func main() {
 	initAudio()
-	p = tea.NewProgram(initialModel(), tea.WithAltScreen())
+	
+	m := initialModel()
+	p = tea.NewProgram(m, tea.WithAltScreen())
+	
+	m.terminalProgram = p 
+	
+	initMPRIS(&m)
+
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error: %v", err)
 		os.Exit(1)
