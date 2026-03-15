@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dhowden/tag"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/gopxl/beep/speaker"
@@ -18,57 +19,69 @@ type nextSongMsg struct{}
 type tickMsg time.Time
 
 type model struct {
-	folders      []Folder
-	cursor       int
-	playing      bool
-	volume       int
-	shuffle      bool
-	currentSong  string
-	currentPath  string
-	masterQueue  []string 
-	displayQueue []string 
-	queueIdx     int
+	folders       []Folder
+	cursor        int
+	playing       bool
+	volume        int
+	shuffle       bool
+	currentSong   string
+	currentPath   string
+	masterQueue   []string 
+	displayQueue  []string 
+	queueIdx      int
+	searching     bool
+	searchQuery   string
+	allFolders    []Folder
 
-	searching    bool
-	searchQuery  string
-	allFolders   []Folder
+	currentTitle  string
+	currentArtist string
 }
 
 var p *tea.Program
 
 func initialModel() model {
-	f, _ := scanMusic()
-	sort.Slice(f, func(i, j int) bool { return f[i].Name < f[j].Name })
-	
-	conf := loadConfig()
-	
-	m := model{
-		folders:      f,
-		allFolders:   f,
-		volume:       conf.Volume,
-		shuffle:      conf.Shuffle,
-		masterQueue:  conf.Queue,
-		displayQueue: conf.Queue,
-		currentPath:  conf.CurrentPath,
-		queueIdx:     conf.QueueIdx,
-	}
+    f, _ := scanMusic()
+    sort.Slice(f, func(i, j int) bool { return f[i].Name < f[j].Name })
+    
+    conf := loadConfig()
+    
+    m := model{
+        folders:       f,
+        allFolders:    f,
+        volume:        conf.Volume,
+        shuffle:       conf.Shuffle,
+        masterQueue:   conf.Queue,
+        displayQueue:  conf.Queue,
+        currentPath:   conf.CurrentPath,
+        currentTitle:  conf.CurrentTitle,
+        currentArtist: conf.CurrentArtist,
+        queueIdx:      conf.QueueIdx,
+        playing:       false,
+    }
 
-	if m.currentPath != "" {
-		m.currentSong = filepath.Base(m.currentPath)
-		playFile(m.currentPath, func() {
-			if p != nil { p.Send(nextSongMsg{}) }
-		})
-		seekAudio(conf.Offset)
-		
-		if ctrl != nil {
-			speaker.Lock()
-			ctrl.Paused = true
-			speaker.Unlock()
-			m.playing = false
-		}
-	}
-	
-	return m
+    if m.currentPath != "" {
+        if m.currentTitle == "" {
+            m.currentTitle = filepath.Base(m.currentPath)
+        }
+        if m.currentArtist == "" {
+            m.currentArtist = "Unknown Artist"
+        }
+
+        playFile(m.currentPath, func() {
+            if p != nil { p.Send(nextSongMsg{}) }
+        })
+
+        if ctrl != nil {
+            ctrl.Paused = true
+        }
+
+        setVolume(m.volume)
+
+        if conf.Offset > 0 {
+            seekAudio(conf.Offset)
+        }
+    }
+    return m
 }
 
 func (m model) Init() tea.Cmd { return tick() }
@@ -80,14 +93,33 @@ func tick() tea.Cmd {
 func (m *model) playCurrent() {
 	if len(m.displayQueue) > 0 {
 		m.currentPath = m.displayQueue[m.queueIdx]
-		m.currentSong = filepath.Base(m.currentPath)
 		
+		f, err := os.Open(m.currentPath)
+		if err == nil {
+			metadata, err := tag.ReadFrom(f)
+			if err == nil {
+				m.currentTitle = metadata.Title()
+				m.currentArtist = metadata.Artist()
+			} else {
+				m.currentTitle = ""
+				m.currentArtist = ""
+			}
+			f.Close()
+		}
+
+		if m.currentTitle == "" {
+			m.currentTitle = filepath.Base(m.currentPath)
+		}
+		if m.currentArtist == "" {
+			m.currentArtist = "Unknown Artist"
+		}
+
 		playFile(m.currentPath, func() {
 			if p != nil {
 				p.Send(nextSongMsg{})
 			}
 		})
-		
+
 		m.playing = true
 		setVolume(m.volume)
 	}
@@ -256,11 +288,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	return lipgloss.JoinHorizontal(lipgloss.Top,
-		renderSidebar(m.folders, m.cursor, m.searching, m.searchQuery), 
-		renderPlayer(m.currentSong, m.currentPath, m.playing, m.volume, m.shuffle),
-		renderQueue(m.displayQueue, m.currentPath),
-	)
+    return lipgloss.JoinHorizontal(lipgloss.Top,
+        renderSidebar(m.folders, m.cursor, m.searching, m.searchQuery),
+        renderPlayer(m.currentTitle, m.currentArtist, m.currentPath, m.playing, m.volume, m.shuffle),
+        renderQueue(m.displayQueue, m.currentPath),
+    )
 }
 
 func main() {

@@ -7,12 +7,14 @@ import (
 )
 
 type Config struct {
-	Volume      int      `json:"volume"`
-	Shuffle     bool     `json:"shuffle"`
-	Queue       []string `json:"queue"`
-	CurrentPath string   `json:"current_path"`
-	QueueIdx    int      `json:"queue_idx"`
-	Offset      int      `json:"offset"`
+	Volume        int      `json:"volume"`
+	Shuffle       bool     `json:"shuffle"`
+	Queue         []string `json:"queue"`
+	CurrentPath   string   `json:"current_path"`
+	QueueIdx      int      `json:"queue_idx"`
+	Offset        int      `json:"offset"`
+	CurrentTitle  string   `json:"current_title"`
+	CurrentArtist string   `json:"current_artist"`
 }
 
 func getConfigPath() string {
@@ -23,18 +25,20 @@ func getConfigPath() string {
 }
 
 func saveConfig(m model) {
-	curr, _ := getTimeInfo()
-	
-	c := Config{
-		Volume:      m.volume,
-		Shuffle:     m.shuffle,
-		Queue:       m.masterQueue,
-		CurrentPath: m.currentPath,
-		QueueIdx:    m.queueIdx,
-		Offset:      int(curr.Seconds()),
-	}
-	data, _ := json.Marshal(c)
-	os.WriteFile(getConfigPath(), data, 0644)
+    curr, _ := getTimeInfo()
+    
+    c := Config{
+        Volume:        m.volume,
+        Shuffle:       m.shuffle,
+        Queue:         m.masterQueue,
+        CurrentPath:   m.currentPath,
+        CurrentTitle:  m.currentTitle,
+        CurrentArtist: m.currentArtist,
+        QueueIdx:      m.queueIdx,
+        Offset:        int(curr.Seconds()),
+    }
+    data, _ := json.Marshal(c)
+    os.WriteFile(getConfigPath(), data, 0644)
 }
 
 func loadConfig() Config {

@@ -85,12 +85,12 @@ func formatDuration(d time.Duration) string {
 	return fmt.Sprintf("%02d:%02d", minutes, seconds)
 }
 
-func renderPlayer(song string, currentPath string, playing bool, vol int, shuf bool) string {
+func renderPlayer(title string, artist string, currentPath string, playing bool, vol int, shuf bool) string {
 	state := "⏸ PAUSED"
 	if playing {
 		state = "▶ PLAYING"
 	}
-	
+
 	folderName := "Unknown"
 	if currentPath != "" {
 		folderName = filepath.Base(filepath.Dir(currentPath))
@@ -117,6 +117,8 @@ func renderPlayer(song string, currentPath string, playing bool, vol int, shuf b
 	folderBox := lipgloss.NewStyle().Background(special).Foreground(black).Bold(true).Padding(0, 1).MarginLeft(1).Render("󰉋 " + folderName)
 
 	keyStyle := lipgloss.NewStyle().Foreground(gray)
+	artistStyle := lipgloss.NewStyle().Foreground(gray).Italic(true)
+
 	help := lipgloss.JoinVertical(lipgloss.Left,
 		"\n",
 		keyStyle.Render("[j/k]   Navigation    [/]   Search"),
@@ -131,7 +133,8 @@ func renderPlayer(song string, currentPath string, playing bool, vol int, shuf b
 	return midStyle.Render(lipgloss.JoinVertical(lipgloss.Left,
 		lipgloss.JoinHorizontal(lipgloss.Center, statusBox, folderBox),
 		"\n",
-		lipgloss.NewStyle().Bold(true).Foreground(special).Render(song),
+		lipgloss.NewStyle().Bold(true).Foreground(special).Render(title),
+		artistStyle.Render("by "+artist),
 		"\n",
 		fmt.Sprintf("%s %s %s", formatDuration(curr), bar, formatDuration(total)),
 		"\n",
