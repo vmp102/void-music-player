@@ -34,7 +34,12 @@ func initAudio() {
 func setVolume(steps int) {
 	if volumeControl == nil { return }
 	speaker.Lock()
-	volumeControl.Volume = float64(steps-100) / 20.0
+	
+	if steps <= 0 {
+		volumeControl.Volume = -100.0 
+	} else {
+		volumeControl.Volume = float64(steps-100) / 20.0
+	}
 	speaker.Unlock()
 }
 

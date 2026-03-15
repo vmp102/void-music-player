@@ -44,7 +44,7 @@ func saveConfig(m model) {
 func loadConfig() Config {
 	data, err := os.ReadFile(getConfigPath())
 	if err != nil {
-		return Config{Volume: 40, Shuffle: true}
+		return Config{Volume: 100, Shuffle: false}
 	}
 	var c Config
 	json.Unmarshal(data, &c)

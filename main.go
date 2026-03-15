@@ -304,14 +304,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case "+", "=":
-			if m.volume < 100 {
+			if m.volume < 130 {
 				m.volume += 5
-				setVolume(m.volume)
-			}
+					if m.volume > 130 { m.volume = 130 }
+					setVolume(m.volume)
+				}
 		case "-", "_":
 			if m.volume > 0 {
 				m.volume -= 5
-				setVolume(m.volume)
+					if m.volume < 0 { m.volume = 0 }
+					setVolume(m.volume)
 			}
 		}
 	}
