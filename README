@@ -5,7 +5,7 @@ VMP is a minimalist, keyboard-driven TUI music player designed for high-fidelity
 ## Controls
 
 - [j/k]: Browse Folders
-- [Enter]: Select & Play
+- [l]: Select & Play
 - [/]: Search
 - [.]: Clear Search
 
