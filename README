@@ -21,6 +21,7 @@ Keybinds are also shown inside the app if you forgot some :P
 
 ## Installation
 
+Before installation, make sure you've downloaded a Nerd Font and is set as the default font in your terminal. Otherwise, VMP is prone to look  broken.
 For now you can do this:
 Create a folder for vmp and put *.go files inside it.
 Next, inside that folder, run "go install ." (without the quotation marks"
