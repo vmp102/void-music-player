@@ -216,7 +216,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 
-		case "enter":
+		case "l":
 			if len(m.folders) > 0 {
 				sel := m.folders[m.cursor]
 				songs := make([]string, len(sel.Songs))

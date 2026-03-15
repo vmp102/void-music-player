@@ -111,7 +111,7 @@ func renderPlayer(song string, playing bool, vol int, shuf bool) string {
 	help := lipgloss.JoinVertical(lipgloss.Left,
 		"\n",
 		keyStyle.Render("[j/k]   Navigation    [/]   Search"),
-		keyStyle.Render("[Enter] Play Folder   [.]   Clear Search"),
+		keyStyle.Render("[l]     Play Folder   [.]   Clear Search"),
 		keyStyle.Render("[p]     Pause         [e/r] Seek 5s"),
 		keyStyle.Render("[b/n]   Prev/Next"),
 		keyStyle.Render("[+/-]   Vol Up/Down"),
