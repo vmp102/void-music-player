@@ -25,5 +25,5 @@ For now you can do this:
 Create a folder for vmp and put *.go files inside it.
 Next, inside that folder, run "go install ." (without the quotation marks"
 Unsure on how it works on Windows, but on Linux add "export PATH=$PATH:$(go env GOPATH)/bin" (without quotation marks) to your .bashrc or .zshrc.
-Next, just run "vmp" inside your terminal and it should load.
+Next, just run "void-music-player" inside your terminal and it should load.
 VMP also check just the ~/Music folder, so I doubt it will work on Windows and it's possible it will work on Mac. If you use any other directory... it won't work.
