@@ -58,8 +58,15 @@ func renderQueue(songs []string, queueIdx int) string {
 	s.WriteString(lipgloss.NewStyle().Bold(true).Foreground(special).Render("QUEUE") + "\n\n")
 
 	count := 0
+	const maxDisplay = 15
+
 	if queueIdx >= 0 && queueIdx < len(songs)-1 {
 		for i := queueIdx + 1; i < len(songs); i++ {
+			if count >= maxDisplay {
+				s.WriteString(lipgloss.NewStyle().Foreground(gray).Render(". . .") + "\n")
+				break
+			}
+			
 			trackName := getTrackName(songs[i])
 			s.WriteString(lipgloss.NewStyle().Foreground(gray).Render("- "+trackName) + "\n")
 			count++
