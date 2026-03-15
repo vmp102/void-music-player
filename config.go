@@ -25,20 +25,20 @@ func getConfigPath() string {
 }
 
 func saveConfig(m model) {
-    curr, _ := getTimeInfo()
-    
-    c := Config{
-        Volume:        m.volume,
-        Shuffle:       m.shuffle,
-        Queue:         m.masterQueue,
-        CurrentPath:   m.currentPath,
-        CurrentTitle:  m.currentTitle,
-        CurrentArtist: m.currentArtist,
-        QueueIdx:      m.queueIdx,
-        Offset:        int(curr.Seconds()),
-    }
-    data, _ := json.Marshal(c)
-    os.WriteFile(getConfigPath(), data, 0644)
+	curr, _ := getTimeInfo()
+
+	c := Config{
+		Volume:        m.volume,
+		Shuffle:       m.shuffle,
+		Queue:         m.displayQueue,
+		CurrentPath:   m.currentPath,
+		CurrentTitle:  m.currentTitle,
+		CurrentArtist: m.currentArtist,
+		QueueIdx:      m.queueIdx,
+		Offset:        int(curr.Seconds()),
+	}
+	data, _ := json.Marshal(c)
+	os.WriteFile(getConfigPath(), data, 0644)
 }
 
 func loadConfig() Config {

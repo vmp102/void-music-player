@@ -15,16 +15,16 @@ var (
 	black   = lipgloss.Color("#000000")
 
 	paneStyle = lipgloss.NewStyle().
-			Border(lipgloss.NormalBorder(), false, true, false, false).
-			BorderForeground(lipgloss.Color("#333333")).
-			Padding(1, 2).
-			Width(35).
-			Height(20)
+		Border(lipgloss.NormalBorder(), false, true, false, false).
+		BorderForeground(lipgloss.Color("#333333")).
+		Padding(1, 2).
+		Width(35).
+		Height(20)
 
 	midStyle = lipgloss.NewStyle().
-			Padding(1, 2).
-			Width(50).
-			Height(20)
+		Padding(1, 2).
+		Width(50).
+		Height(20)
 )
 
 func renderSidebar(folders []Folder, cursor int, searching bool, query string) string {
@@ -53,23 +53,19 @@ func renderSidebar(folders []Folder, cursor int, searching bool, query string) s
 	return paneStyle.Render(s.String())
 }
 
-func renderQueue(songs []string, currentPath string) string {
+func renderQueue(songs []string, queueIdx int) string {
 	var s strings.Builder
 	s.WriteString(lipgloss.NewStyle().Bold(true).Foreground(special).Render("QUEUE") + "\n\n")
 
-	count, found := 0, false
-	for _, song := range songs {
-		if song == currentPath {
-			found = true
-			continue
-		}
-		if found && count < 15 {
-			s.WriteString(lipgloss.NewStyle().Foreground(gray).Render("- "+filepath.Base(song)) + "\n")
+	count := 0
+	if queueIdx >= 0 && queueIdx < len(songs)-1 {
+		for i := queueIdx + 1; i < len(songs); i++ {
+			s.WriteString(lipgloss.NewStyle().Foreground(gray).Render("- " + filepath.Base(songs[i])) + "\n")
 			count++
 		}
 	}
 
-	if count == 0 && !found {
+	if count == 0 {
 		s.WriteString(lipgloss.NewStyle().Foreground(gray).Italic(true).Render("Empty"))
 	}
 
