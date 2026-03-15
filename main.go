@@ -42,16 +42,33 @@ func initialModel() model {
 	
 	conf := loadConfig()
 	
-	return model{
+	m := model{
 		folders:      f,
 		allFolders:   f,
 		volume:       conf.Volume,
 		shuffle:      conf.Shuffle,
 		masterQueue:  conf.Queue,
+		displayQueue: conf.Queue,
 		currentPath:  conf.CurrentPath,
 		queueIdx:     conf.QueueIdx,
-		displayQueue: conf.Queue, 
 	}
+
+	if m.currentPath != "" {
+		m.currentSong = filepath.Base(m.currentPath)
+		playFile(m.currentPath, func() {
+			if p != nil { p.Send(nextSongMsg{}) }
+		})
+		seekAudio(conf.Offset)
+		
+		if ctrl != nil {
+			speaker.Lock()
+			ctrl.Paused = true
+			speaker.Unlock()
+			m.playing = false
+		}
+	}
+	
+	return m
 }
 
 func (m model) Init() tea.Cmd { return tick() }

@@ -12,6 +12,7 @@ type Config struct {
 	Queue       []string `json:"queue"`
 	CurrentPath string   `json:"current_path"`
 	QueueIdx    int      `json:"queue_idx"`
+	Offset      int      `json:"offset"`
 }
 
 func getConfigPath() string {
@@ -22,12 +23,15 @@ func getConfigPath() string {
 }
 
 func saveConfig(m model) {
+	curr, _ := getTimeInfo()
+	
 	c := Config{
 		Volume:      m.volume,
 		Shuffle:     m.shuffle,
 		Queue:       m.masterQueue,
 		CurrentPath: m.currentPath,
 		QueueIdx:    m.queueIdx,
+		Offset:      int(curr.Seconds()),
 	}
 	data, _ := json.Marshal(c)
 	os.WriteFile(getConfigPath(), data, 0644)
