@@ -1,4 +1,4 @@
-module github.com/vmp102/vmp
+module github.com/vmp102/void-music-player
 
 go 1.26.1
 
