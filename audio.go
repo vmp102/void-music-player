@@ -88,24 +88,49 @@ func getTimeInfo() (time.Duration, time.Duration) {
 }
 
 func scanMusic() ([]Folder, error) {
-	home, _ := os.UserHomeDir()
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
+
 	musicPath := filepath.Join(home, "Music")
+	
+	if _, err := os.Stat(musicPath); os.IsNotExist(err) {
+		altPath := filepath.Join(home, "Documents", "My Music")
+		if _, err := os.Stat(altPath); err == nil {
+			musicPath = altPath
+		}
+	}
+
 	folderMap := make(map[string]*Folder)
 	exts := map[string]bool{".mp3": true, ".flac": true}
 
-	filepath.Walk(musicPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil { return err }
+	err = filepath.Walk(musicPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return nil
+		}
+		
 		ext := strings.ToLower(filepath.Ext(path))
 		if !info.IsDir() && exts[ext] {
 			dir := filepath.Dir(path)
 			if _, exists := folderMap[dir]; !exists {
-				folderMap[dir] = &Folder{Name: filepath.Base(dir), Path: dir}
+				folderMap[dir] = &Folder{
+					Name: filepath.Base(dir), 
+					Path: dir,
+				}
 			}
 			folderMap[dir].Songs = append(folderMap[dir].Songs, path)
 		}
 		return nil
 	})
+	
+	if err != nil {
+		return nil, err
+	}
+
 	var folders []Folder
-	for _, f := range folderMap { folders = append(folders, *f) }
+	for _, f := range folderMap {
+		folders = append(folders, *f)
+	}
 	return folders, nil
 }
