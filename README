@@ -24,7 +24,9 @@ Keybinds are also shown inside the app if you forgot some :P
 Before installation, make sure you've downloaded a Nerd Font and is set as the default font in your terminal. Otherwise, VMP is prone to look  broken.
 For now you can do this:
 Create a folder for vmp and put *.go files inside it.
-Next, inside that folder, run "go install ." (without the quotation marks"
+Next, inside that folder, run "go install ." (without the quotation marks)
 Unsure on how it works on Windows, but on Linux add "export PATH=$PATH:$(go env GOPATH)/bin" (without quotation marks) to your .bashrc or .zshrc.
 Next, just run "void-music-player" inside your terminal and it should load.
-VMP also check just the ~/Music folder, so I doubt it will work on Windows and it's possible it will work on Mac. If you use any other directory... it won't work.
+Added Windows support, however, I'm unsure on how it works. Keep your music inside ~/Music on Unix-based systems and the Music folder on Windows.
+
+If you encounter any issues, or have any suggestions, you can open an issue on Github.
