@@ -259,6 +259,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 
+		case "c":
+		    if len(m.displayQueue) > 0 && m.queueIdx >= 0 && m.queueIdx < len(m.displayQueue) {
+		        m.displayQueue = []string{m.currentPath}
+		        m.queueIdx = 0
+		    } else {
+		        m.displayQueue = nil
+		        m.queueIdx = 0
+		    }
+
 		case "e":
 			seekAudio(-5)
 		case "r":
