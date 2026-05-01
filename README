@@ -1,32 +1,15 @@
-# Void Music Player
+void-music-player (vmp) is just a simple TUI keyboard-driven music player
 
-VMP is a minimalist, keyboard-driven TUI music player designed for high-fidelity audio and distraction-free listening. Built with Go, it provides a "rice-friendly" alternative to complex setups like MPD.
-
-## Controls
-
-- [j/k]: Browse Folders
-- [l]: Select & Play
-- [/]: Search
-- [.]: Clear Search
-
-- [p]: Play/Pause
-- [b/n]: Prev/Next Track
-- [e/r]: Seek 5s
-- [s]: Toggle Shuffle
-
-- [+/-]: Volume Control
-- [q]: Quit
-
-Keybinds are also shown inside the app if you forgot some :P
 
 ## Installation
 
-Before installation, make sure you've downloaded a Nerd Font and is set as the default font in your terminal. Otherwise, VMP is prone to look  broken.
-For now you can do this:
-Create a folder for vmp and put *.go files inside it.
-Next, inside that folder, run "go install ." (without the quotation marks)
-Unsure on how it works on Windows, but on Linux add "export PATH=$PATH:$(go env GOPATH)/bin" (without quotation marks) to your .bashrc or .zshrc.
-Next, just run "void-music-player" inside your terminal and it should load.
-Added Windows support, however, I'm unsure on how it works. Keep your music inside ~/Music on Unix-based systems and the Music folder on Windows.
+# Requirements:
+Nerd Font set as default in your terminal of choice,
+Go (for compiling)
 
-If you encounter any issues, or have any suggestions, you can open an issue on Github.
+# Installing vmp:
+git clone https://github.com/vmp102/void-music-player.git
+cd void-music-player
+go build .
+
+After these, running void-music-player in your terminal should start running vmp
