@@ -15,6 +15,7 @@ type Config struct {
 	Offset        int      `json:"offset"`
 	CurrentTitle  string   `json:"current_title"`
 	CurrentArtist string   `json:"current_artist"`
+	SidebarCursor int      `json:"sidebar_cursor"`
 }
 
 func getConfigPath() string {
@@ -36,6 +37,7 @@ func saveConfig(m model) {
 		CurrentArtist: m.currentArtist,
 		QueueIdx:      m.queueIdx,
 		Offset:        int(curr.Seconds()),
+		SidebarCursor: m.cursor,
 	}
 	data, _ := json.Marshal(c)
 	os.WriteFile(getConfigPath(), data, 0644)
@@ -44,7 +46,11 @@ func saveConfig(m model) {
 func loadConfig() Config {
 	data, err := os.ReadFile(getConfigPath())
 	if err != nil {
-		return Config{Volume: 100, Shuffle: false}
+		return Config{
+			Volume:  100,
+			Shuffle: false,
+			Queue:   []string{},
+		}
 	}
 	var c Config
 	json.Unmarshal(data, &c)

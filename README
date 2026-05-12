@@ -11,7 +11,7 @@ Go (for compiling)
 git clone https://github.com/vmp102/void-music-player.git
 cd void-music-player
 go mod tidy
-go build -o vmp .
+go build .
 go install .
 
-After these, running vmp in your terminal should start running it
+After these, running void-music-player in your terminal should run it.

@@ -12,7 +12,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/dhowden/tag"
-	"github.com/gopxl/beep/speaker"
 )
 
 type nextSongMsg struct{}
@@ -36,8 +35,8 @@ type model struct {
 	searchQuery   string
 	allFolders    []Folder
 
-	termWidth     int
-	termHeight    int
+	termWidth  int
+	termHeight int
 }
 
 var p *tea.Program
@@ -51,6 +50,7 @@ func initialModel() model {
 	m := model{
 		folders:       f,
 		allFolders:    f,
+		cursor:        conf.SidebarCursor,
 		volume:        conf.Volume,
 		shuffle:       conf.Shuffle,
 		displayQueue:  conf.Queue,
@@ -62,242 +62,139 @@ func initialModel() model {
 	}
 
 	if m.currentPath != "" {
-		if m.currentTitle == "" {
-			m.currentTitle = filepath.Base(m.currentPath)
-		}
-		if m.currentArtist == "" {
-			m.currentArtist = "Unknown Artist"
-		}
-
 		playFile(m.currentPath, func() {
 			if p != nil {
 				p.Send(nextSongMsg{})
 			}
 		})
-
-		if ctrl != nil {
-			ctrl.Paused = true
-		}
-
+		pauseAudio()
 		setVolume(m.volume)
-
-		if conf.Offset > 0 {
-			seekAudio(conf.Offset)
-		}
+		seekAudio(conf.Offset)
 	}
+
 	return m
 }
 
-func (m model) Init() tea.Cmd { return tick() }
+func (m model) Init() tea.Cmd {
+	return tick()
+}
 
 func tick() tea.Cmd {
-	return tea.Every(time.Millisecond*250, func(t time.Time) tea.Msg { return tickMsg(t) })
-}
-
-func (m *model) playCurrent() {
-	if len(m.displayQueue) > 0 && m.queueIdx >= 0 && m.queueIdx < len(m.displayQueue) {
-		m.currentPath = m.displayQueue[m.queueIdx]
-
-		f, err := os.Open(m.currentPath)
-		if err == nil {
-			metadata, err := tag.ReadFrom(f)
-			if err == nil {
-				m.currentTitle = metadata.Title()
-				m.currentArtist = metadata.Artist()
-			} else {
-				m.currentTitle = ""
-				m.currentArtist = ""
-			}
-			f.Close()
-		}
-
-		if m.currentTitle == "" {
-			m.currentTitle = filepath.Base(m.currentPath)
-		}
-		if m.currentArtist == "" {
-			m.currentArtist = "Unknown Artist"
-		}
-
-		playFile(m.currentPath, func() {
-			if p != nil {
-				p.Send(nextSongMsg{})
-			}
-		})
-
-		m.playing = true
-		setVolume(m.volume)
-	}
-}
-
-func getTrackName(path string) string {
-	f, err := os.Open(path)
-	if err != nil {
-		return filepath.Base(path)
-	}
-	defer f.Close()
-
-	metadata, err := tag.ReadFrom(f)
-	if err != nil || metadata.Title() == "" {
-		return filepath.Base(path)
-	}
-	return metadata.Title()
+	return tea.Every(time.Second, func(t time.Time) tea.Msg {
+		return tickMsg(t)
+	})
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		m.termHeight = msg.Height
 		m.termWidth = msg.Width
-		return m, nil
+		m.termHeight = msg.Height
+
+	case tickMsg:
+		// Auto-save every 10 seconds
+		t := time.Time(msg)
+		if t.Second()%10 == 0 {
+			saveConfig(m)
+		}
+		return m, tick()
+
 	case nextSongMsg:
-		if len(m.displayQueue) > 0 {
-			if m.queueIdx < len(m.displayQueue)-1 {
-				m.queueIdx++
-				m.playCurrent()
-			} else {
-				m.queueIdx = len(m.displayQueue)
-				m.playing = false
-				m.currentPath = ""
-				m.currentTitle = ""
-				m.currentArtist = ""
-				speaker.Clear()
-			}
+		if m.queueIdx < len(m.displayQueue)-1 {
+			m.queueIdx++
+			m.playCurrent()
+		} else {
+			m.playing = false
 		}
 		return m, nil
 
-	case tickMsg:
-		return m, tick()
-
 	case tea.KeyMsg:
+		s := msg.String()
+
 		if m.searching {
-			switch msg.String() {
-			case "esc", "enter":
+			if s == "enter" || s == "esc" {
 				m.searching = false
 				return m, nil
-
-			case ".":
-				m.searching = false
-				m.searchQuery = ""
-				m.folders = m.allFolders
-				m.cursor = 0
-				return m, nil
-
-			case "backspace":
+			}
+			if s == "backspace" {
 				if len(m.searchQuery) > 0 {
 					m.searchQuery = m.searchQuery[:len(m.searchQuery)-1]
 				}
-
-			default:
-				if len(msg.String()) == 1 {
-					m.searchQuery += msg.String()
-				}
+			} else if len(s) == 1 {
+				m.searchQuery += s
 			}
 
-			var filtered []Folder
+			m.folders = nil
 			for _, f := range m.allFolders {
 				if strings.Contains(strings.ToLower(f.Name), strings.ToLower(m.searchQuery)) {
-					filtered = append(filtered, f)
+					m.folders = append(m.folders, f)
 				}
 			}
-			m.folders = filtered
 			m.cursor = 0
 			return m, nil
 		}
 
-		switch msg.String() {
-		case "q", "ctrl+c":
+		switch s {
+		case KeyQuit, "ctrl+c":
 			saveConfig(m)
 			return m, tea.Quit
 
-		case "/":
+		case KeySearch:
 			m.searching = true
-			m.searchQuery = ""
-			if len(m.allFolders) == 0 {
-				m.allFolders = m.folders
-			}
 			return m, nil
 
-		case ".":
+		case KeyClearSearch:
 			m.searchQuery = ""
 			m.folders = m.allFolders
 			m.cursor = 0
 			return m, nil
 
-		case "j":
-			if m.cursor < len(m.folders)-1 {
-				m.cursor++
-			}
-		case "k":
+		case KeyUp:
 			if m.cursor > 0 {
 				m.cursor--
 			}
-
-		case "n":
-			if len(m.displayQueue) > 0 {
-				if m.queueIdx < len(m.displayQueue)-1 {
-					m.queueIdx++
-					m.playCurrent()
-				} else {
-					m.queueIdx = len(m.displayQueue)
-					m.playing = false
-					m.currentPath = ""
-					m.currentTitle = ""
-					m.currentArtist = ""
-					speaker.Clear()
-				}
-			}
-		case "b":
-			if len(m.displayQueue) > 0 {
-				if m.queueIdx > 0 && m.queueIdx < len(m.displayQueue) {
-					m.queueIdx--
-					m.playCurrent()
-				} else if m.queueIdx == len(m.displayQueue) {
-					m.queueIdx = len(m.displayQueue) - 1
-					m.playCurrent()
-				} else if m.queueIdx == 0 {
-					m.playCurrent()
-				}
+		case KeyDown:
+			if m.cursor < len(m.folders)-1 {
+				m.cursor++
 			}
 
-		case "c":
-		    if len(m.displayQueue) > 0 && m.queueIdx >= 0 && m.queueIdx < len(m.displayQueue) {
-		        m.displayQueue = []string{m.currentPath}
-		        m.queueIdx = 0
-		    } else {
-		        m.displayQueue = nil
-		        m.queueIdx = 0
-		    }
+		case KeyPause, KeyPauseAlt, " ":
+			m.playing = !m.playing
+			if m.playing {
+				resumeAudio()
+			} else {
+				pauseAudio()
+			}
 
-		case "e":
+		case KeyNext:
+			if m.queueIdx < len(m.displayQueue)-1 {
+				m.queueIdx++
+				m.playCurrent()
+			}
+
+		case KeyPrev:
+			if m.queueIdx > 0 {
+				m.queueIdx--
+				m.playCurrent()
+			}
+
+		case KeySeekBack:
 			seekAudio(-5)
-		case "r":
+		case KeySeekForward:
 			seekAudio(5)
 
-		case "p":
-			if ctrl != nil {
-				speaker.Lock()
-				ctrl.Paused = !ctrl.Paused
-				m.playing = !ctrl.Paused
-				speaker.Unlock()
-			}
-
-		case "s":
+		case KeyShuffle:
 			m.shuffle = !m.shuffle
-			if len(m.displayQueue) > 0 && m.queueIdx < len(m.displayQueue)-1 {
-				rem := m.displayQueue[m.queueIdx+1:]
-				if m.shuffle {
-					rand.Seed(time.Now().UnixNano())
-					rand.Shuffle(len(rem), func(i, j int) {
-						rem[i], rem[j] = rem[j], rem[i]
-					})
-				} else {
-					sort.Slice(rem, func(i, j int) bool {
-						return filepath.Base(rem[i]) < filepath.Base(rem[j])
-					})
-				}
+
+		case KeyClearQueue:
+			m.displayQueue = nil
+			m.queueIdx = -1
+			if m.currentPath != "" {
+				m.displayQueue = []string{m.currentPath}
+				m.queueIdx = 0
 			}
 
-		case "l":
+		case KeyPlayFolder:
 			if len(m.folders) > 0 {
 				sel := m.folders[m.cursor]
 				songs := make([]string, len(sel.Songs))
@@ -318,43 +215,82 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.playCurrent()
 			}
 
-		case "+", "=":
+		case KeyVolUp:
 			if m.volume < 130 {
 				m.volume += 5
-					if m.volume > 130 { m.volume = 130 }
-					setVolume(m.volume)
+				if m.volume > 130 {
+					m.volume = 130
 				}
-		case "-", "_":
+				setVolume(m.volume)
+			}
+		case KeyVolDown:
 			if m.volume > 0 {
 				m.volume -= 5
-					if m.volume < 0 { m.volume = 0 }
-					setVolume(m.volume)
+				if m.volume < 0 {
+					m.volume = 0
+				}
+				setVolume(m.volume)
 			}
 		}
 	}
 	return m, nil
 }
 
+func (m *model) playCurrent() {
+	if m.queueIdx < 0 || m.queueIdx >= len(m.displayQueue) {
+		return
+	}
+	path := m.displayQueue[m.queueIdx]
+	m.currentPath = path
+	m.playing = true
+
+	m.currentTitle = getTrackName(path)
+	m.currentArtist = "Unknown Artist"
+
+	f, err := os.Open(path)
+	if err == nil {
+		tags, err := tag.ReadFrom(f)
+		if err == nil {
+			if tags.Title() != "" {
+				m.currentTitle = tags.Title()
+			}
+			if tags.Artist() != "" {
+				m.currentArtist = tags.Artist()
+			}
+		}
+		f.Close()
+	}
+
+	playFile(path, func() {
+		if m.terminalProgram != nil {
+			m.terminalProgram.Send(nextSongMsg{})
+		}
+	})
+	setVolume(m.volume)
+}
+
 func (m model) View() string {
-	return lipgloss.JoinHorizontal(lipgloss.Top,
-		renderSidebar(m.folders, m.cursor, m.searching, m.searchQuery, m.termHeight),
-		renderPlayer(m.currentTitle, m.currentArtist, m.currentPath, m.playing, m.volume, m.shuffle, m.termHeight, m.termWidth),
-		renderQueue(m.displayQueue, m.queueIdx, m.termHeight),
-	)
+	sidebar := renderSidebar(m.folders, m.cursor, m.searching, m.searchQuery, m.termHeight-2)
+	player := renderPlayer(m.currentTitle, m.currentArtist, m.currentPath, m.playing, m.volume, m.shuffle, m.termHeight-2, m.termWidth)
+	queue := renderQueue(m.displayQueue, m.queueIdx, m.termHeight-2)
+
+	return lipgloss.JoinHorizontal(lipgloss.Top, sidebar, player, queue)
 }
 
 func main() {
 	initAudio()
-	
 	m := initialModel()
 	p = tea.NewProgram(m, tea.WithAltScreen())
-	
-	m.terminalProgram = p 
-	
+	m.terminalProgram = p
+
 	initMPRIS(&m)
 
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error: %v", err)
 		os.Exit(1)
 	}
+}
+
+func getTrackName(path string) string {
+	return strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
 }

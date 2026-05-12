@@ -15,12 +15,12 @@ var (
 	black   = lipgloss.Color("#000000")
 
 	paneStyle = lipgloss.NewStyle().
-		Border(lipgloss.NormalBorder(), false, true, false, false).
-		BorderForeground(lipgloss.Color("#333333")).
-		Padding(1, 2)
+			Border(lipgloss.NormalBorder(), false, true, false, false).
+			BorderForeground(lipgloss.Color("#333333")).
+			Padding(1, 2)
 
 	midStyle = lipgloss.NewStyle().
-		Padding(1, 2)
+			Padding(1, 2)
 )
 
 func renderSidebar(folders []Folder, cursor int, searching bool, query string, h int) string {
@@ -111,7 +111,7 @@ func renderPlayer(title string, artist string, currentPath string, playing bool,
 		mainWidth = 40
 	}
 
-	barWidth := mainWidth - 16 
+	barWidth := mainWidth - 16
 	if barWidth < 10 {
 		barWidth = 10
 	}
@@ -128,19 +128,7 @@ func renderPlayer(title string, artist string, currentPath string, playing bool,
 	statusBox := lipgloss.NewStyle().Background(special).Foreground(black).Bold(true).Padding(0, 1).Render(state)
 	folderBox := lipgloss.NewStyle().Background(special).Foreground(black).Bold(true).Padding(0, 1).MarginLeft(1).Render("󰉋 " + folderName)
 
-	keyStyle := lipgloss.NewStyle().Foreground(gray)
 	artistStyle := lipgloss.NewStyle().Foreground(gray).Italic(true)
-
-	help := lipgloss.JoinVertical(lipgloss.Left,
-		"\n",
-		keyStyle.Render("[j/k]   Navigation    [/]   Search"),
-		keyStyle.Render("[l]     Play Folder   [.]   Clear Search"),
-		keyStyle.Render("[p]     Pause         [e/r] Seek 5s"),
-		keyStyle.Render("[b/n]   Prev/Next     [c]   Clear Queue"),
-		keyStyle.Render("[+/-]   Vol Up/Down"),
-		keyStyle.Render("[s]     Shuffle"),
-		keyStyle.Render("[q]     Quit"),
-	)
 
 	return midStyle.Copy().Width(mainWidth).Height(h).Render(lipgloss.JoinVertical(lipgloss.Left,
 		lipgloss.JoinHorizontal(lipgloss.Center, statusBox, folderBox),
@@ -151,6 +139,5 @@ func renderPlayer(title string, artist string, currentPath string, playing bool,
 		fmt.Sprintf("%s %s %s", formatDuration(curr), bar, formatDuration(total)),
 		"\n",
 		fmt.Sprintf("Vol: %d%% | Shuffle: %s", vol, shufLabel),
-		help,
 	))
 }

@@ -134,3 +134,27 @@ func scanMusic() ([]Folder, error) {
 	}
 	return folders, nil
 }
+
+func resumeAudio() {
+	if ctrl != nil {
+		speaker.Lock()
+		ctrl.Paused = false
+		speaker.Unlock()
+	}
+}
+
+func pauseAudio() {
+	if ctrl != nil {
+		speaker.Lock()
+		ctrl.Paused = true
+		speaker.Unlock()
+	}
+}
+
+func toggleAudio() {
+	if ctrl != nil {
+		speaker.Lock()
+		ctrl.Paused = !ctrl.Paused
+		speaker.Unlock()
+	}
+}
