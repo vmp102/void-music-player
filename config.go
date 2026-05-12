@@ -9,6 +9,8 @@ import (
 type Config struct {
 	Volume        int      `json:"volume"`
 	Shuffle       bool     `json:"shuffle"`
+	Repeat        bool     `json:"repeat"`
+	Loop          bool     `json:"loop"`
 	Queue         []string `json:"queue"`
 	CurrentPath   string   `json:"current_path"`
 	QueueIdx      int      `json:"queue_idx"`
@@ -27,10 +29,11 @@ func getConfigPath() string {
 
 func saveConfig(m model) {
 	curr, _ := getTimeInfo()
-
 	c := Config{
 		Volume:        m.volume,
 		Shuffle:       m.shuffle,
+		Repeat:        m.repeat,
+		Loop:          m.loop,
 		Queue:         m.displayQueue,
 		CurrentPath:   m.currentPath,
 		CurrentTitle:  m.currentTitle,
@@ -49,6 +52,8 @@ func loadConfig() Config {
 		return Config{
 			Volume:  100,
 			Shuffle: false,
+			Repeat:  false,
+			Loop:    false,
 			Queue:   []string{},
 		}
 	}

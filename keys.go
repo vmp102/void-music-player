@@ -1,6 +1,5 @@
 package main
 
-// Keybinds configuration
 var (
 	KeyQuit        = "q"
 	KeySearch      = "/"
@@ -15,6 +14,8 @@ var (
 	KeyPause       = "p"
 	KeyPauseAlt    = "space"
 	KeyShuffle     = "s"
+	KeyRepeat      = "o"
+	KeyLoop        = "i"
 	KeyPlayFolder  = "l"
 	KeyVolUp       = "="
 	KeyVolDown     = "-"

@@ -26,7 +26,6 @@ var (
 func renderSidebar(folders []Folder, cursor int, searching bool, query string, h int) string {
 	var s strings.Builder
 	s.WriteString(lipgloss.NewStyle().Bold(true).Foreground(special).Render("FOLDERS") + "\n\n")
-
 	for i, f := range folders {
 		prefix := "  "
 		style := lipgloss.NewStyle().Foreground(gray)
@@ -36,7 +35,6 @@ func renderSidebar(folders []Folder, cursor int, searching bool, query string, h
 		}
 		s.WriteString(style.Render(prefix+f.Name) + "\n")
 	}
-
 	if searching {
 		bar := lipgloss.NewStyle().
 			Foreground(special).
@@ -45,34 +43,28 @@ func renderSidebar(folders []Folder, cursor int, searching bool, query string, h
 			Render("/ " + query + "█")
 		s.WriteString("\n" + bar)
 	}
-
 	return paneStyle.Copy().Width(30).Height(h).Render(s.String())
 }
 
 func renderQueue(songs []string, queueIdx int, h int) string {
 	var s strings.Builder
 	s.WriteString(lipgloss.NewStyle().Bold(true).Foreground(special).Render("QUEUE") + "\n\n")
-
 	count := 0
 	const maxDisplay = 15
-
 	if queueIdx >= 0 && queueIdx < len(songs)-1 {
 		for i := queueIdx + 1; i < len(songs); i++ {
 			if count >= maxDisplay {
 				s.WriteString(lipgloss.NewStyle().Foreground(gray).Render(". . .") + "\n")
 				break
 			}
-
 			trackName := getTrackName(songs[i])
 			s.WriteString(lipgloss.NewStyle().Foreground(gray).Render("- "+trackName) + "\n")
 			count++
 		}
 	}
-
 	if count == 0 {
 		s.WriteString(lipgloss.NewStyle().Foreground(gray).Italic(true).Render("Empty"))
 	}
-
 	return paneStyle.Copy().
 		Border(lipgloss.NormalBorder(), false, false, false, true).
 		PaddingRight(4).
@@ -88,48 +80,41 @@ func formatDuration(d time.Duration) string {
 	return fmt.Sprintf("%02d:%02d", minutes, seconds)
 }
 
-func renderPlayer(title string, artist string, currentPath string, playing bool, vol int, shuf bool, h int, w int) string {
+func renderPlayer(title string, artist string, currentPath string, playing bool, vol int, shuf bool, repeat bool, loop bool, h int, w int) string {
 	state := "⏸ PAUSED"
 	if playing {
 		state = "▶ PLAYING"
 	}
-
 	folderName := "Unknown"
 	if currentPath != "" {
 		folderName = filepath.Base(filepath.Dir(currentPath))
 	}
-
-	shufLabel := "OFF"
-	if shuf {
-		shufLabel = "ON"
-	}
+	shufLabel, repLabel, loopLabel := "OFF", "OFF", "OFF"
+	if shuf { shufLabel = "ON" }
+	if repeat { repLabel = "ON" }
+	if loop { loopLabel = "ON" }
 
 	curr, total := getTimeInfo()
-
 	mainWidth := w - 60
-	if mainWidth < 40 {
-		mainWidth = 40
-	}
-
+	if mainWidth < 40 { mainWidth = 40 }
 	barWidth := mainWidth - 16
-	if barWidth < 10 {
-		barWidth = 10
-	}
+	if barWidth < 10 { barWidth = 10 }
 
 	percent := 0.0
-	if total > 0 {
-		percent = float64(curr) / float64(total)
-	}
+	if total > 0 { percent = float64(curr) / float64(total) }
 	filled := int(float64(barWidth) * percent)
-
 	bar := lipgloss.NewStyle().Foreground(special).Render(strings.Repeat("━", filled)) +
 		lipgloss.NewStyle().Foreground(lipgloss.Color("#333333")).Render(strings.Repeat("━", barWidth-filled))
 
 	statusBox := lipgloss.NewStyle().Background(special).Foreground(black).Bold(true).Padding(0, 1).Render(state)
 	folderBox := lipgloss.NewStyle().Background(special).Foreground(black).Bold(true).Padding(0, 1).MarginLeft(1).Render("󰉋 " + folderName)
 
-	artistStyle := lipgloss.NewStyle().Foreground(gray).Italic(true)
+	numOn := vol / 2
+	numOff := 50 - numOn
+	volBar := lipgloss.NewStyle().Foreground(special).Render(strings.Repeat("", numOn)) +
+		lipgloss.NewStyle().Foreground(gray).Render(strings.Repeat("", numOff))
 
+	artistStyle := lipgloss.NewStyle().Foreground(gray).Italic(true)
 	return midStyle.Copy().Width(mainWidth).Height(h).Render(lipgloss.JoinVertical(lipgloss.Left,
 		lipgloss.JoinHorizontal(lipgloss.Center, statusBox, folderBox),
 		"\n",
@@ -138,6 +123,8 @@ func renderPlayer(title string, artist string, currentPath string, playing bool,
 		"\n",
 		fmt.Sprintf("%s %s %s", formatDuration(curr), bar, formatDuration(total)),
 		"\n",
-		fmt.Sprintf("Vol: %d%% | Shuffle: %s", vol, shufLabel),
+		fmt.Sprintf("Vol: %s %d%%", volBar, vol),
+		"\n",
+		fmt.Sprintf("Shuffle: %s | Repeat: %s | Loop: %s", shufLabel, repLabel, loopLabel),
 	))
 }

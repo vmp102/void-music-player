@@ -12,14 +12,11 @@ func initMPRIS(m *model) {
 	if err != nil {
 		return
 	}
-
 	reply, err := conn.RequestName("org.mpris.MediaPlayer2.vmp", dbus.NameFlagReplaceExisting)
 	if err != nil || reply != dbus.RequestNameReplyPrimaryOwner {
 		return
 	}
-
 	mp := &mprisPlayer{m: m}
-
 	propsSpec := map[string]map[string]*prop.Prop{
 		"org.mpris.MediaPlayer2": {
 			"CanQuit":      {Value: true, Writable: false, Emit: prop.EmitTrue},
@@ -37,14 +34,11 @@ func initMPRIS(m *model) {
 			"CanControl":     {Value: true, Writable: false, Emit: prop.EmitTrue},
 		},
 	}
-
 	props, err := prop.Export(conn, "/org/mpris/MediaPlayer2", propsSpec)
 	if err != nil {
 		return
 	}
-
 	conn.Export(mp, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player")
-
 	node := introspect.Node{
 		Name: "/org/mpris/MediaPlayer2",
 		Interfaces: []introspect.Interface{
@@ -94,7 +88,6 @@ func (p *mprisPlayer) Play() *dbus.Error  { return p.PlayPause() }
 func (p *mprisPlayer) Pause() *dbus.Error { return p.PlayPause() }
 func (p *mprisPlayer) Stop() *dbus.Error  { return nil }
 
-// These are typically required for full MPRIS spec compliance
 func (p *mprisPlayer) SetPosition(o dbus.ObjectPath, pos int64) *dbus.Error { return nil }
 func (p *mprisPlayer) OpenUri(uri string) *dbus.Error                      { return nil }
 func (p *mprisPlayer) Seek(offset int64) *dbus.Error                      { return nil }
