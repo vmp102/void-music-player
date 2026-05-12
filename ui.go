@@ -89,10 +89,6 @@ func renderPlayer(title string, artist string, currentPath string, playing bool,
 	if currentPath != "" {
 		folderName = filepath.Base(filepath.Dir(currentPath))
 	}
-	shufLabel, repLabel, loopLabel := "OFF", "OFF", "OFF"
-	if shuf { shufLabel = "ON" }
-	if repeat { repLabel = "ON" }
-	if loop { loopLabel = "ON" }
 
 	curr, total := getTimeInfo()
 	mainWidth := w - 60
@@ -109,12 +105,48 @@ func renderPlayer(title string, artist string, currentPath string, playing bool,
 	statusBox := lipgloss.NewStyle().Background(special).Foreground(black).Bold(true).Padding(0, 1).Render(state)
 	folderBox := lipgloss.NewStyle().Background(special).Foreground(black).Bold(true).Padding(0, 1).MarginLeft(1).Render("󰉋 " + folderName)
 
+	// Volume Icon Logic
+	volIcon := " "
+	if vol == 0 {
+		volIcon = " "
+	} else if vol <= 60 {
+		volIcon = " "
+	}
+
+	// Volume Bar: Using  + Space for breathing room
 	numOn := vol / 2
 	numOff := 50 - numOn
-	volBar := lipgloss.NewStyle().Foreground(special).Render(strings.Repeat("", numOn)) +
-		lipgloss.NewStyle().Foreground(gray).Render(strings.Repeat("", numOff))
+	
+	// We use the square  followed by a space " " to ensure they don't touch
+	volOnStr := strings.Repeat(" ", numOn)
+	volOffStr := strings.Repeat(" ", numOff)
+
+	volBar := lipgloss.NewStyle().Foreground(special).Render(volOnStr) +
+		lipgloss.NewStyle().Foreground(lipgloss.Color("#333333")).Render(volOffStr)
+
+	// Mode icons logic (Shuffle, Repeat, Loop)
+	shufIcon := lipgloss.NewStyle().Foreground(gray).Render("")
+	if shuf { shufIcon = lipgloss.NewStyle().Foreground(special).Render("") }
+	
+	repIcon := lipgloss.NewStyle().Foreground(gray).Render("")
+	if repeat { repIcon = lipgloss.NewStyle().Foreground(special).Render("") }
+	
+	loopIcon := lipgloss.NewStyle().Foreground(gray).Render("")
+	if loop { loopIcon = lipgloss.NewStyle().Foreground(special).Render("") }
+
+	// Create the modes block with spacing between icons
+	modes := lipgloss.NewStyle().MarginLeft(3).Render(
+		fmt.Sprintf("%s   %s   %s", shufIcon, repIcon, loopIcon),
+	)
 
 	artistStyle := lipgloss.NewStyle().Foreground(gray).Italic(true)
+	
+	// Combine the volume icon, the 50 squares, percentage, and the mode icons
+	volumeLine := lipgloss.JoinHorizontal(lipgloss.Center, 
+		fmt.Sprintf("%s %s %d%%", volIcon, volBar, vol),
+		modes,
+	)
+
 	return midStyle.Copy().Width(mainWidth).Height(h).Render(lipgloss.JoinVertical(lipgloss.Left,
 		lipgloss.JoinHorizontal(lipgloss.Center, statusBox, folderBox),
 		"\n",
@@ -123,8 +155,6 @@ func renderPlayer(title string, artist string, currentPath string, playing bool,
 		"\n",
 		fmt.Sprintf("%s %s %s", formatDuration(curr), bar, formatDuration(total)),
 		"\n",
-		fmt.Sprintf("Vol: %s %d%%", volBar, vol),
-		"\n",
-		fmt.Sprintf("Shuffle: %s | Repeat: %s | Loop: %s", shufLabel, repLabel, loopLabel),
+		volumeLine,
 	))
 }
